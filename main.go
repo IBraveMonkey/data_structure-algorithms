@@ -1,11 +1,5 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/IBraveMonkey/data-structure-algorithms/quick_sort"
-)
-
 const (
 	Sunday = iota
 	Monday
@@ -13,9 +7,6 @@ const (
 )
 
 func main() {
-	arr := []int{8, 0, 10, 4, 15, 2, 24}
-
-	fmt.Println(quick_sort.QuickSort2(arr))
 
 	// Работа с арифметикой указателей
 	// arr := [3]int{10, 20, 30}
