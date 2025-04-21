@@ -8,6 +8,9 @@ const (
 
 func main() {
 
+	// fmt.Println(arr)
+
+	// fmt.Println(arr)
 	// Работа с арифметикой указателей
 	// arr := [3]int{10, 20, 30}
 	// p := unsafe.Pointer(&arr[0])
