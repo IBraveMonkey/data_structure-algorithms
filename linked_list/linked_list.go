@@ -9,6 +9,7 @@ type Node struct {
 
 type LinkedList struct {
 	Head *Node
+	Tail *Node
 }
 
 // Добавление элемента в начало списка
@@ -20,6 +21,10 @@ func (l *LinkedList) AddToFront(value int) {
 	}
 
 	l.Head = newNode
+
+	if l.Tail == nil {
+		l.Tail = newNode
+	}
 }
 
 // Добавление элемента в конец списка
@@ -32,17 +37,13 @@ func (l *LinkedList) AddToBack(value int) {
 	// Если список пут, новый узел становится головой
 	if l.Head == nil {
 		l.Head = newNode
-		return
+		l.Tail = newNode
+	} else {
+		// Добавляем новый узел после текущего tail
+		l.Tail.Next = newNode
+		// Добавляем tail чтобы он указывал на новый узел
+		l.Tail = newNode
 	}
-
-	// Идем до конца списка, чтобы добавить элемент
-	current := l.Head
-	for current.Next != nil {
-		current = current.Next
-	}
-
-	// У последнего узла указываем следующий элемент
-	current.Next = newNode
 }
 
 // Печать списка
