@@ -45,7 +45,7 @@ package quick_sort
 */
 
 func medianOfThree(arr []int, low, hight int) int {
-	mid := (low + hight) / 2
+	mid := low + (hight-low)/2
 
 	// Сравнение трех элементов: первый, средний, последний
 	if arr[low] > arr[mid] {

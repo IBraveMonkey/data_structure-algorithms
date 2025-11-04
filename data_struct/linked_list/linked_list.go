@@ -1,6 +1,8 @@
 package linked_list
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Node struct {
 	Value int

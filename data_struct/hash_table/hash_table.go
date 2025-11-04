@@ -14,8 +14,7 @@ func ExtraLetter(a, b string) string {
 	}
 
 	for _, v := range a {
-		_, ok := hTable[string(v)]
-		if ok {
+		if _, ok := hTable[string(v)]; ok {
 			hTable[string(v)]--
 		}
 	}
@@ -30,7 +29,7 @@ func ExtraLetter(a, b string) string {
 }
 
 /* Сумма двух элементов массива
-Дан неотсортированный массив целых чисел и некоторое число target. Необходимо написть функцию, которая найдет два таких элемента в массиве, сумма которых будет равна target
+Дан неотсортированный массив целых чисел и некоторое число target. Необходимо написать функцию, которая найдет два таких элемента в массиве, сумма которых будет равна target
 */
 
 func TwoSum(data []int, target int) []int {
