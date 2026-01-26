@@ -38,6 +38,6 @@ func deleteNonExistingKey() {
 	delete(data, 100)
 }
 
-func main() {
+func basic_map() {
 
 }
