@@ -1,134 +1,132 @@
+/*
+Stack (Стек)
+
+Что это такое?
+Стек — это упорядоченная коллекция элементов, работающая по принципу LIFO (Last In, First Out — "последним пришёл, первым ушёл").
+Представьте стопку тарелок: вы можете положить новую тарелку только наверх и взять тарелку только сверху.
+
+Зачем это нужно?
+- Для отслеживания порядка выполнения операций (например, вызовы функций, рекурсия).
+- Для отмены действий (Undo).
+- Для парсинга выражений и проверки синтаксиса (например, скобок).
+
+В чём смысл?
+- Доступ осуществляется только к одному элементу — верхнему.
+- Строгий порядок добавления и удаления.
+
+Когда использовать?
+- Когда нужно обработать элементы в обратном порядке их поступления.
+- В алгоритмах обхода (DFS).
+- Для проверки сбалансированности скобок.
+
+Как работает?
+- Push: Добавить элемент на вершину стека.
+- Pop: Удалить и вернуть элемент с вершины стека.
+- Peek (Top): Посмотреть на верхний элемент без удаления.
+
+Сложность операций:
+- Push: O(1)
+- Pop: O(1)
+- Peek: O(1)
+- Search: O(n)
+
+Как понять, что задача подходит под Stack?
+- Нужно найти "пару" для элемента (например, закрывающую скобку).
+- Нужно обрабатывать данные в обратном порядке.
+- Задача связана с вложенными структурами.
+*/
+
 package stack
 
-// Реализация на массиве
+// ArrayStack - Реализация стека на основе слайса (более производительная в Go за счет локальности кэша)
 type ArrayStack struct {
-	Data []int
+	Data []interface{}
 }
 
-func (stack *ArrayStack) Push(data int) {
+// Push - добавляет элемент в стек
+func (stack *ArrayStack) Push(data interface{}) {
 	stack.Data = append(stack.Data, data)
 }
 
-func (stack *ArrayStack) Pop() int {
-	if len(stack.Data) < 0 {
-		return 0
+// Pop - удаляет и возвращает верхний элемент стека
+func (stack *ArrayStack) Pop() (interface{}, bool) {
+	if len(stack.Data) == 0 {
+		return nil, false
 	}
 
 	lastIndex := len(stack.Data) - 1
 	lastElem := stack.Data[lastIndex]
 
 	stack.Data = stack.Data[0:lastIndex]
-	return lastElem
+	return lastElem, true
 }
 
-// Реализация на стэке
+// Peek - возвращает верхний элемент без удаления
+func (stack *ArrayStack) Peek() (interface{}, bool) {
+	if len(stack.Data) == 0 {
+		return nil, false
+	}
+
+	lastIndex := len(stack.Data) - 1
+	return stack.Data[lastIndex], true
+}
+
+// IsEmpty - проверяет, пуст ли стек
+func (stack *ArrayStack) IsEmpty() bool {
+	return len(stack.Data) == 0
+}
+
+// Size - возвращает размер стека
+func (stack *ArrayStack) Size() int {
+	return len(stack.Data)
+}
+
+// Node - узел для связной реализации стека
 type Node struct {
-	Value int
+	Value interface{}
 	Next  *Node
 }
 
+// Stack - Реализация стека на основе связного списка (менее эффективна по памяти из-за указателей)
 type Stack struct {
-	Top *Node
+	Top     *Node
+	SizeVal int
 }
 
-func (s *Stack) Push(value int) {
+// Push - добавляет элемент в стек
+func (s *Stack) Push(value interface{}) {
 	newNode := &Node{Value: value, Next: s.Top}
 	s.Top = newNode
+	s.SizeVal++
 }
 
-func (s *Stack) Pop() (int, bool) {
+// Pop - удаляет и возвращает верхний элемент стека
+func (s *Stack) Pop() (interface{}, bool) {
 	if s.IsEmpty() {
-		return 0, false
+		return nil, false
 	}
 
 	removedValue := s.Top.Value
 	s.Top = s.Top.Next
+	s.SizeVal--
 	return removedValue, true
 }
 
-func (s *Stack) Peek() (int, bool) {
+// Peek - возвращает верхний элемент без удаления
+func (s *Stack) Peek() (interface{}, bool) {
 	if s.IsEmpty() {
-		return 0, false
+		return nil, false
 	}
 
 	return s.Top.Value, true
 }
 
+// IsEmpty - проверяет, пуст ли стек
 func (s *Stack) IsEmpty() bool {
 	return s.Top == nil
 }
 
-// Является ли строка палиндромом
-
-type StackString struct {
-	Data []string
-}
-
-func (q *StackString) Push(el string) {
-	q.Data = append(q.Data, el)
-}
-
-func (q *StackString) Pop() string {
-	if len(q.Data) == 0 {
-		return ""
-	}
-
-	lastIdx := len(q.Data) - 1
-	lastEl := q.Data[lastIdx]
-
-	q.Data = q.Data[0:lastIdx]
-
-	return lastEl
-}
-
-func (q *StackString) Size() int {
-	return len(q.Data)
-}
-
-func (q *StackString) Peek() (string, bool) {
-	if len(q.Data) == 0 {
-		return "", false
-	}
-
-	lastIdx := len(q.Data) - 1
-	lastEl := q.Data[lastIdx]
-
-	return lastEl, true
-}
-
-// При помощи stack
-func IsPalindrome(a string) bool {
-	q := StackString{}
-
-	for _, val := range a {
-		q.Push(string(val))
-	}
-
-	// ["a", "b", "c", "c", "b", "a"]
-
-	for _, val := range a {
-		if string(val) != q.Pop() {
-			return false
-		}
-
-	}
-
-	return true
-}
-
-// При помощи 2 указателей
-func IsPalindromePointer(a string) bool {
-	left := 0
-	right := len(a) - 1
-
-	for left < right {
-		if a[left] != a[right] {
-			return false
-		}
-
-		left++
-		right--
-	}
-
-	return true
+// Size - возвращает размер стека
+func (s *Stack) Size() int {
+	return s.SizeVal
 }

@@ -1,5 +1,52 @@
-package main
+/*
+LRU Cache (Least Recently Used Cache)
 
+Что это такое?
+LRU (Least Recently Used) кэш — это структура данных, которая ограничивает количество хранимых
+элементов и при достижении лимита удаляет наименее недавно использованные элементы.
+При обращении к элементу он становится "недавно использованным".
+
+Зачем это нужно?
+- Ограничение использования памяти
+- Ускорение доступа к часто используемым данным
+- Поддержание актуальности данных в кэше
+
+В чём смысл?
+- Хранить ограниченное количество элементов
+- При доступе к элементу помечать его как "недавно использованный"
+- При переполнении удалять наименее недавно использованные элементы
+
+Когда использовать?
+- Когда нужно ограничить использование памяти кэшем
+- Когда важна скорость доступа к часто используемым данным
+- Когда нужно автоматически удалять "старые" данные
+
+Как работает?
+- Используется двусвязный список для отслеживания порядка использования
+- Используется хеш-таблица для быстрого доступа к элементам
+- При доступе к элементу он перемещается в начало списка (как недавно использованный)
+- При переполнении удаляется элемент из конца списка (наименее недавно использованный)
+
+Как понять, что задача подходит под LRU Cache?
+- Нужно ограничить размер кэша
+- Нужно автоматически удалять "старые" данные
+- Важна частота использования элементов
+
+LRU Cache в Go:
+
+Реализация LRU кэша в Go обычно сочетает:
+- Двусвязный список для отслеживания порядка использования
+- Хеш-таблицу (map) для быстрого доступа к элементам
+- Синхронизацию при многопоточном доступе
+- Управление памятью для эффективной работы
+
+Примеры задач с использованием LRU Cache:
+Смотрите файл example.go
+*/
+
+package lru
+
+// Node - узел двусвязного списка для LRU кэша
 type Node struct {
 	Key   int
 	Value int
@@ -7,27 +54,19 @@ type Node struct {
 	Prev  *Node
 }
 
+// LRUCache - реализация LRU кэша с использованием двусвязного списка и хеш-таблицы
 type LRUCache struct {
 	Capacity int
-	Data     map[int]*Node
-	Head     *Node
-	Tail     *Node
+	Data     map[int]*Node // Хеш-таблица для быстрого доступа
+	Head     *Node         // Виртуальная голова списка
+	Tail     *Node         // Виртуальный хвост списка
 }
 
-func (this *LRUCache) remove(node *Node) {
-	node.Prev.Next = node.Next
-	node.Next.Prev = node.Prev
-}
-
-func (this *LRUCache) addToHead(node *Node) {
-	node.Next = this.Head.Next
-	node.Prev = this.Head
-	this.Head.Next.Prev = node
-	this.Head.Next = node
-}
-
+// Constructor - создает новый LRU кэш с заданной вместимостью
 func Constructor(capacity int) LRUCache {
 	data := make(map[int]*Node, capacity)
+
+	// Создаем виртуальные голову и хвост для упрощения операций
 	head := &Node{}
 	tail := &Node{}
 	head.Next = tail
@@ -41,43 +80,60 @@ func Constructor(capacity int) LRUCache {
 	}
 }
 
+// remove - удаляет узел из двусвязного списка
+func (this *LRUCache) remove(node *Node) {
+	node.Prev.Next = node.Next
+	node.Next.Prev = node.Prev
+}
+
+// addToHead - добавляет узел в начало списка (как недавно использованный)
+func (this *LRUCache) addToHead(node *Node) {
+	node.Next = this.Head.Next
+	node.Prev = this.Head
+	this.Head.Next.Prev = node
+	this.Head.Next = node
+}
+
+// Get - возвращает значение по ключу, помечая элемент как недавно использованный
 func (this *LRUCache) Get(key int) int {
 	node, ok := this.Data[key]
 	if !ok {
-		return -1
+		return -1 // Ключ не найден
 	}
 
+	// Перемещаем узел в начало списка (как недавно использованный)
 	this.remove(node)
 	this.addToHead(node)
 	return node.Value
 }
 
+// Put - добавляет или обновляет элемент в кэше
 func (this *LRUCache) Put(key int, value int) {
 	node, ok := this.Data[key]
 	if ok {
+		// Обновляем существующий элемент
+		node.Value = value
+		// Перемещаем в начало как недавно использованный
 		this.remove(node)
 		this.addToHead(node)
-		node.Value = value
 		return
 	}
 
+	// Проверяем, не превышена ли вместимость
 	if len(this.Data) >= this.Capacity {
-		node := this.Tail.Prev
-		this.remove(node)
-		delete(this.Data, node.Key)
+		// Удаляем наименее недавно использованный элемент (в конце списка)
+		leastUsed := this.Tail.Prev
+		this.remove(leastUsed)
+		delete(this.Data, leastUsed.Key)
 	}
 
-	node = &Node{
+	// Создаем новый узел
+	newNode := &Node{
 		Key:   key,
 		Value: value,
 	}
-	this.addToHead(node)
-	this.Data[key] = node
-}
 
-/**
- * Your LRUCache object will be instantiated and called as such:
- * obj := Constructor(capacity);
- * param_1 := obj.Get(key);
- * obj.Put(key,value);
- */
+	// Добавляем в начало списка и в хеш-таблицу
+	this.addToHead(newNode)
+	this.Data[key] = newNode
+}

@@ -1,61 +1,128 @@
+/*
+Queue (Очередь)
+
+Что это такое?
+Очередь — это линейная структура данных, которая следует принципу FIFO (First In, First Out) —
+первым пришел, первым ушел. Элементы добавляются в конец очереди и удаляются из начала очереди.
+Это похоже на обычную очередь в магазине: первый в очереди обслуживается первым.
+
+Зачем это нужно?
+- Управление задачами, которые должны выполняться в порядке поступления
+- Алгоритмы обхода графов (BFS)
+- Буферизация данных между процессами
+- Обработка запросов в веб-серверах
+
+В чём смысл?
+- Добавление элементов в конец (enqueue)
+- Удаление элементов из начала (dequeue)
+- Поддержание порядка поступления элементов
+
+Когда использовать?
+- Когда нужно обрабатывать элементы в порядке их поступления
+- Для алгоритмов, требующих обработки в ширину (BFS)
+- При симуляции систем массового обслуживания
+
+Как работает?
+- Добавление элемента (enqueue) происходит в конец очереди
+- Удаление элемента (dequeue) происходит из начала очереди
+- Доступ к первому элементу (peek) без удаления
+
+Как понять, что задача подходит под Queue?
+- Нужно обрабатывать элементы в порядке их поступления
+- Требуется алгоритм обхода в ширину
+- Есть задачи на симуляцию процессов с очередью
+
+Queue в Go:
+
+В Go очереди можно реализовать несколькими способами:
+- С использованием срезов (slайсов) - простая реализация, но менее эффективная для dequeue
+- С использованием связных списков - более эффективная реализация
+- С использованием контейнера container/list - стандартная реализация двусвязного списка
+
+Примеры задач с использованием Queue:
+Смотрите файл example.go
+*/
+
 package queue
 
-import (
-	"fmt"
-)
+import "fmt"
 
+// ArrayQueue - очередь, реализованная на основе среза
 type ArrayQueue struct {
-	Data []int
+	Data []interface{}
+	Size int
 }
 
-func (queue *ArrayQueue) Push(data int) {
+// Push - добавляет элемент в конец очереди
+func (queue *ArrayQueue) Push(data interface{}) {
 	queue.Data = append(queue.Data, data)
+	queue.Size++
 }
 
-func (queue *ArrayQueue) Pop() int {
-	if len(queue.Data) <= 0 {
-		return 0
+// Pop - удаляет и возвращает элемент из начала очереди
+func (queue *ArrayQueue) Pop() (interface{}, bool) {
+	if queue.Size <= 0 {
+		return nil, false
 	}
 
 	firstElem := queue.Data[0]
 	queue.Data = queue.Data[1:]
-	return firstElem
+	queue.Size--
+
+	return firstElem, true
 }
 
-// Очередь на LinkedList
-type Node struct {
-	Value int
-	Next  *Node
+// Peek - возвращает первый элемент без удаления
+func (queue *ArrayQueue) Peek() (interface{}, bool) {
+	if queue.Size <= 0 {
+		return nil, false
+	}
+
+	return queue.Data[0], true
 }
 
-type Queue struct {
-	Head *Node
-	Tail *Node
+// IsEmpty - проверяет, пуста ли очередь
+func (queue *ArrayQueue) IsEmpty() bool {
+	return queue.Size == 0
 }
 
-// Добавление элемента в очередь(в конец)
-func (q *Queue) Enqueue(value int) {
-	newNode := &Node{
+// QueueNode - узел для связной реализации очереди
+type QueueNode struct {
+	Value interface{}
+	Next  *QueueNode
+}
+
+// LinkedListQueue - очередь, реализованная на основе связного списка
+type LinkedListQueue struct {
+	Head *QueueNode // Начало очереди
+	Tail *QueueNode // Конец очереди
+	Size int
+}
+
+// Enqueue - добавляет элемент в конец очереди
+func (q *LinkedListQueue) Enqueue(value interface{}) {
+	newNode := &QueueNode{
 		Value: value,
-		Next:  nil, // У последнего узла всегда next = nil
+		Next:  nil,
 	}
 
 	// Если очередь пуста, новый узел становится и головой и хвостом
 	if q.Head == nil {
 		q.Head = newNode
 		q.Tail = newNode
-		return
+	} else {
+		// Иначе добавляем новый узел в конец (после tail)
+		q.Tail.Next = newNode
+		q.Tail = newNode
 	}
 
-	// Иначе добавляем новый узел в конец(tail)
-	q.Tail.Next = newNode
-	q.Tail = newNode
+	q.Size++
 }
 
-// Удаление элемента из очереди(из начала)
-func (q *Queue) Dequeue() (int, bool) {
+// Dequeue - удаляет и возвращает элемент из начала очереди
+func (q *LinkedListQueue) Dequeue() (interface{}, bool) {
 	if q.Head == nil {
-		return 0, false
+		return nil, false
 	}
 
 	value := q.Head.Value
@@ -65,96 +132,97 @@ func (q *Queue) Dequeue() (int, bool) {
 		q.Tail = nil
 	}
 
+	q.Size--
+
 	return value, true
 }
 
-func (q *Queue) Peek() (int, bool) {
+// Front - возвращает первый элемент без удаления
+func (q *LinkedListQueue) Front() (interface{}, bool) {
 	if q.Head == nil {
-		return 0, false
+		return nil, false
 	}
 
 	return q.Head.Value, true
 }
 
-func (q *Queue) IsEmpty() bool {
+// IsEmpty - проверяет, пуста ли очередь
+func (q *LinkedListQueue) IsEmpty() bool {
 	return q.Head == nil
 }
 
-func (q *Queue) Print() {
+// Print - печатает содержимое очереди
+func (q *LinkedListQueue) Print() {
 	current := q.Head
 
 	for current != nil {
-		fmt.Println(current.Value, "->")
+		fmt.Print(current.Value)
+		if current.Next != nil {
+			fmt.Print(" -> ")
+		}
 		current = current.Next
 	}
-
-	fmt.Println("nil")
+	fmt.Println(" -> nil")
 }
 
-// Является ли одна строка исходной для другой строки a = abc, b - adbec => true
-
-type StringQueue struct {
-	Data []string
+// CircularQueue - кольцевая очередь (Ring Buffer)
+type CircularQueue struct {
+	data     []int
+	front    int
+	rear     int
+	size     int
+	capacity int
 }
 
-func (q *StringQueue) Push(val string) {
-	q.Data = append(q.Data, val)
+func NewCircularQueue(capacity int) *CircularQueue {
+	return &CircularQueue{
+		data:     make([]int, capacity),
+		front:    -1,
+		rear:     -1,
+		size:     0,
+		capacity: capacity,
+	}
 }
 
-func (q *StringQueue) Pop() string {
-	if len(q.Data) <= 0 {
-		return ""
+func (cq *CircularQueue) Enqueue(value int) bool {
+	if cq.size == cq.capacity {
+		return false // Очередь полна
 	}
 
-	firstElem := q.Data[0]
-	q.Data = q.Data[1:]
-
-	return firstElem
-}
-
-func (q *StringQueue) Peek() string {
-	if len(q.Data) <= 0 {
-		return ""
+	if cq.front == -1 { // Первая вставка
+		cq.front = 0
+		cq.rear = 0
+	} else {
+		cq.rear = (cq.rear + 1) % cq.capacity
 	}
 
-	return q.Data[0]
+	cq.data[cq.rear] = value
+	cq.size++
+	return true
 }
 
-func (q *StringQueue) Size() int {
-	return len(q.Data)
+func (cq *CircularQueue) Dequeue() (int, bool) {
+	if cq.size == 0 {
+		return 0, false // Очередь пуста
+	}
+
+	value := cq.data[cq.front]
+
+	if cq.front == cq.rear { // Последний элемент
+		cq.front = -1
+		cq.rear = -1
+	} else {
+		cq.front = (cq.front + 1) % cq.capacity
+	}
+
+	cq.size--
+	return value, true
 }
 
-// Через Очередь
-func IsSubsequence(a, b string) bool {
-	queue := &StringQueue{}
-
-	for _, val := range a {
-		queue.Push(string(val))
-	}
-
-	for _, val := range b {
-		firstEl := queue.Peek()
-
-		if firstEl == string(val) {
-			queue.Pop()
-		}
-	}
-
-	return queue.Size() == 0
+func (cq *CircularQueue) IsFull() bool {
+	return cq.size == cq.capacity
 }
 
-// Через два указателя
-func IsSubsequencePointer(a, b string) bool {
-	i := 0
-	j := 0
-
-	// abc      asbqcd
-	for i < len(a) && j < len(b) {
-		if a[i] == b[j] {
-			i++
-		}
-		j++
-	}
-
-	return i == len(a)
+func (cq *CircularQueue) IsEmpty() bool {
+	return cq.size == 0
 }
