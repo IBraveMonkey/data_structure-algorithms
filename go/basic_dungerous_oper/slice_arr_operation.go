@@ -12,7 +12,6 @@ func accessToArrayElement1() {
 	idx := 4               // можно скрыть(обмануть), но в runtime поймаем ошибку
 	fmt.Println(data[idx]) // panic
 
-	//nolint:gosec,unused
 	fmt.Println(data[4]) // compilation error
 }
 
