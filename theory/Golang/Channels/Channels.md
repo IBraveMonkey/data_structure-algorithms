@@ -129,7 +129,8 @@ graph LR
     end
     recvx((recvx)) --> S1
     sendx((sendx)) --> S3
-    Note over S1, S2: Занятые слоты
+    style S1 fill:#f96,stroke:#333,stroke-width:2px
+    style S2 fill:#f96,stroke:#333,stroke-width:2px
 ```
 
 Пример:
