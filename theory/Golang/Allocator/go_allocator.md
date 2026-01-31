@@ -84,14 +84,15 @@ graph TD
 **Схема иерархии:**
 ```mermaid
 graph TD
-    G[Goroutine] -->|Просит память| P[mcache (у Processor P)]
-    P -->|Нет места| C[mcentral (Shared Spans)]
-    C -->|Нет места| H[mheap (Global Heap)]
-    H -->|Нужна память| OS[OS: mmap/Virtual Memory]
+    G[Goroutine] -->|Просит память| P["mcache (у Processor P)"]
+    P -->|Нет места| C["mcentral (Shared Spans)"]
+    C -->|Нет места| H["mheap (Global Heap)"]
+    H -->|Нужна память| OS["OS: mmap/Virtual Memory"]
     
     style P fill:#d4edda,stroke:#28a745
     style C fill:#fff3cd,stroke:#ffc107
     style H fill:#f8d7da,stroke:#dc3545
+```
 ---
 
 ## 4. Как выделяется память: Три пути
