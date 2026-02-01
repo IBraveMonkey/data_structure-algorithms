@@ -45,11 +45,11 @@
 
 ```mermaid
 graph TD
-    subgraph Row_Header [Строчная (Row-Oriented)]
+    subgraph Row_Header ["Строчная (Row-Oriented)"]
         R1[Данные всех колонок перемешаны]
     end
     
-    subgraph Col_Header [Колоночная (Column-Oriented)]
+    subgraph Col_Header ["Колоночная (Column-Oriented)"]
         C1[Файл: Цены]
         C2[Файл: Даты]
         C3[Файл: ID]
