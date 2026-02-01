@@ -309,10 +309,10 @@ flowchart LR
         UseCases[Use Cases]
     end
     
-    HTTP -->|Adapter| PortIn[Input Port<br/>(Interface)]
+    HTTP -->|Adapter| PortIn["Input Port<br/>(Interface)"]
     PortIn --> UseCases
     
-    UseCases --> PortOut[Output Port<br/>(Interface)]
+    UseCases --> PortOut["Output Port<br/>(Interface)"]
     PortOut -->|Adapter| Postgres
     PortOut -->|Adapter| Redis
 ```
