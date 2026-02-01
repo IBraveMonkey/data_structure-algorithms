@@ -64,12 +64,12 @@ graph LR
 ```mermaid
 graph TD
     subgraph AR ["Active Record"]
-        Obj1[User Object\n+Save()\n+Delete()]
+        Obj1["User Object<br/>+Save()<br/>+Delete()"]
     end
 
     subgraph DM ["Data Mapper"]
-        Obj2[User Entity\n(Только данные)]
-        Mapper[Repository\n+Save(user)\n+Delete(user)]
+        Obj2["User Entity<br/>(Только данные)"]
+        Mapper["Repository<br/>+Save(user)<br/>+Delete(user)"]
         Mapper --> Obj2
     end
 ```
