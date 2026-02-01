@@ -31,14 +31,14 @@
 
 ```mermaid
 graph TB
-    subgraph SalesContext [Контекст Продаж]
-        Client1[Клиент: Тот, кто платит]
-        Order1[Заказ: Договор]
+    subgraph SalesContext ["Контекст Продаж"]
+        Client1["Клиент: Тот, кто платит"]
+        Order1["Заказ: Договор"]
     end
     
-    subgraph ShippingContext [Контекст Доставки]
-        Client2[Клиент: Получатель груза]
-        Order2[Заказ: Список коробок]
+    subgraph ShippingContext ["Контекст Доставки"]
+        Client2["Клиент: Получатель груза"]
+        Order2["Заказ: Список коробок"]
     end
 
     SalesContext <-->|Маппинг данных| ShippingContext
@@ -72,9 +72,9 @@ graph TB
 
 ```mermaid
 graph TD
-    Order[Заказ (ROOT)] --> Item1[Позиция 1]
-    Order --> Item2[Позиция 2]
-    Order --> Address[Адрес доставки]
+    Order["Заказ (ROOT)"] --> Item1["Позиция 1"]
+    Order --> Item2["Позиция 2"]
+    Order --> Address["Адрес доставки"]
     
     style Order fill:#f9f,stroke:#333,stroke-width:4px
 ```
