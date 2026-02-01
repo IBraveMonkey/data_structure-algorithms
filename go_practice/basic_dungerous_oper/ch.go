@@ -27,7 +27,6 @@ func writeToClosedChannel() {
 func rangeNilChannel() {
 	var ch chan int
 	for range ch {
-
 	}
 }
 

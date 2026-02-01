@@ -131,6 +131,7 @@ func appendToNilSlice() {
 func rangeByNilSlice() {
 	var data []int
 	for range data { // ok
+		// но обращение все еще ошибка
 	}
 }
 
