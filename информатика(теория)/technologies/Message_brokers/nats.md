@@ -44,11 +44,11 @@ JetStream поддерживает все три уровня, включая **
 
 ```mermaid
 graph LR
-    Pub[Publisher] -->|Msg-ID: A (1st)| JS{JetStream}
-    Pub -->|Msg-ID: A (Retry)| JS
+    Pub[Publisher] -->|"Msg-ID: A (1st)"| JS{JetStream}
+    Pub -->|"Msg-ID: A (Retry)"| JS
     
-    JS -->|Save & Send| Cons[Consumer]
-    JS -.->|Drop Duplicate| Trash[🗑️]
+    JS -->|"Save & Send"| Cons[Consumer]
+    JS -.->|"Drop Duplicate"| Trash["🗑️"]
 ```
 
 Это делает NATS JetStream очень привлекательным для финансовых транзакций, где дубли недопустимы.
