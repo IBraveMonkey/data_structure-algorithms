@@ -63,7 +63,7 @@ type LRUCache struct {
 }
 
 // Constructor - создает новый LRU кэш с заданной вместимостью
-func Constructor(capacity int) LRUCache {
+func New(capacity int) LRUCache {
 	data := make(map[int]*Node, capacity)
 
 	// Создаем виртуальные голову и хвост для упрощения операций

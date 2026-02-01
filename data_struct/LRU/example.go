@@ -5,7 +5,7 @@ import "fmt"
 // Example демонстрирует использование LRU кэша
 func Example() {
 	// Создаем LRU кэш с вместимостью 2
-	cache := Constructor(2)
+	cache := New(2)
 
 	// Добавляем элементы
 	cache.Put(1, 1) // кэш: [1=1]

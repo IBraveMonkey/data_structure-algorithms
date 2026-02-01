@@ -50,7 +50,6 @@ type Cache struct {
 
 // New - создает новый шардированный кэш с указанным количеством шардов
 func New(shardCount int64) *Cache {
-
 	shards := make([]*Shard, shardCount) // [shard, shard, shard{mu }]
 
 	for i := range shards {
