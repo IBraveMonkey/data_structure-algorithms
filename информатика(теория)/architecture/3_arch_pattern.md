@@ -29,7 +29,7 @@
 ### 🧅 1.1 Onion Architecture (Луковая архитектура)
 *Автор: Джеффри Палермо (2008)*
 
-![Onion Architecture](/Users/ilasgibadullin/Documents/develop/qwerty/data_structure:%20algorithms/go/информатика(теория)/architecture/img/onion.png)
+![Onion Architecture](img/onion.png)
 
 Луковая архитектура делает акцент на том, что приложение — это набор концентрических кругов. Чем ближе к центру, тем чище и важнее код.
 
@@ -46,7 +46,7 @@
 ### ⬡ 1.2 Hexagonal Architecture (Ports and Adapters)
 *Автор: Алистер Кокберн (2005)*
 
-![Hexagonal Architecture](/Users/ilasgibadullin/Documents/develop/qwerty/data_structure:%20algorithms/go/информатика(теория)/architecture/img/hex.png)
+![Hexagonal Architecture](img/hex.png)
 
 Если Луковая — это про слои, то Гексагональная — про **подключаемость**. 
 
@@ -66,7 +66,7 @@
 ### 🏛️ 1.3 Clean Architecture (Чистая архитектура)
 *Автор: Роберт "Uncle Bob" Мартин (2012)*
 
-![Clean Architecture](/Users/ilasgibadullin/Documents/develop/qwerty/data_structure:%20algorithms/go/информатика(теория)/architecture/img/clear.jpg)
+![Clean Architecture](img/clear.jpg)
 
 Это "самая строгая" версия принципа. Она объединяет идеи Луковой и Гексагональной, фокусируясь на правиле зависимостей.
 
