@@ -92,7 +92,7 @@
 #### 🛠️ Как это выглядит в папках (Go-style):
 ```text
 /internal
-  /domain       <-- Core: Энтити и интерфейсы (Ports)
+  /domain       <-- Core: Эн**тити** и интерфейсы (Ports)
   /usecase      <-- Application logic (Services)
   /infra        <-- Adapters: SQL, HTTP clients, Redis
   /delivery     <-- Driving Adapters: Rest API, CLI
