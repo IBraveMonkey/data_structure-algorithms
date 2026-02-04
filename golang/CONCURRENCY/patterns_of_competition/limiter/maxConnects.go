@@ -13,60 +13,76 @@ import (
 	"time"
 )
 
-type Request struct {
-	Payload string
+// Request1 представляет запрос для отправки
+type Request1 struct {
+	Payload string // Данные запроса
 }
 
-type Client interface {
-	SendRequest(ctx context.Context, request Request) error
-	WithLimiter(ctx context.Context, requests []Request)
+// Client1 интерфейс для работы с запросами
+type Client1 interface {
+	SendRequest(ctx context.Context, request Request1) error
+	WithLimiter(ctx context.Context, requests []Request1)
 }
 
-type client struct{}
+type client1 struct{}
 
-func (c client) SendRequest(ctx context.Context, request Request) error {
-	time.Sleep(100 * time.Millisecond)
+// SendRequest отправляет один запрос (имитация)
+func (c client1) SendRequest(ctx context.Context, request Request1) error {
+	time.Sleep(100 * time.Millisecond) // Имитация сетевого запроса
 	fmt.Println("sending request", request.Payload)
 	return nil
 }
 
-// ограничение кол-ва коннектов(работающих горутин)
+// Ограничение количества одновременно работающих коннектов (воркеров)
 var maxConnects = 10
 
-func (c client) WithLimiterWorkerPool(ctx context.Context, ch chan Request) {
+// WithLimiterWorkerPool ограничивает количество соединений через пул воркеров
+func (c client1) WithLimiterWorkerPool(ctx context.Context, ch chan Request1) {
 	wg := sync.WaitGroup{}
 
-	wg.Add(maxConnects)
+	// Запускаем фиксированное количество воркеров
+	wg.Add(maxConnects) // Добавляем в счетчик количество воркеров
+
 	for range maxConnects {
 		go func() {
-			defer wg.Done()
+			defer wg.Done() // Уменьшаем счетчик при завершении воркера
+
+			// Воркер обрабатывает все запросы из канала
 			for req := range ch {
-				c.SendRequest(ctx, req)
+				c.SendRequest(ctx, req) // Обрабатываем запрос
 			}
 		}()
 	}
 
-	wg.Wait()
+	wg.Wait() // Ждем завершения всех воркеров
 }
 
+// maxConnectsFn демонстрирует использование паттерна
 func maxConnectsFn() {
-	ctx := context.Background()
-	c := client{}
-	requests := make([]Request, 1000)
+	ctx := context.Background() // Создаем контекст
+	c := client1{}
+
+	// Создаем 1000 запросов
+	requests := make([]Request1, 1000)
 	for i := 0; i < 1000; i++ {
-		requests[i] = Request{Payload: strconv.Itoa(i)}
+		requests[i] = Request1{Payload: strconv.Itoa(i)}
 	}
+
+	// Обрабатываем запросы с ограничением в 10 воркеров
 	c.WithLimiterWorkerPool(ctx, generate(requests))
 }
 
-func generate(reqs []Request) chan Request {
-	ch := make(chan Request)
+// generate создает канал и отправляет в него все запросы
+func generate(reqs []Request1) chan Request1 {
+	// Создаем небуферизованный канал
+	ch := make(chan Request1)
 
+	// Горутина для отправки запросов в канал
 	go func() {
 		for _, v := range reqs {
-			ch <- v
+			ch <- v // Отправляем каждый запрос
 		}
-		close(ch)
+		close(ch) // Закрываем канал после отправки всех запросов
 	}()
 
 	return ch

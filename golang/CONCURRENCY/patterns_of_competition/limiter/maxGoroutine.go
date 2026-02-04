@@ -53,9 +53,9 @@ func (c client2) WithLimiterSemaphore(ctx context.Context, reqs []Request2) {
 }
 
 func maxGoroutineFn() {
-	ctx := context.Background()
-	c := client2{}
-	requests := make([]Request2, 1000)
+	ctx := context.Background()        // Создаем фоновый контекст для операций.
+	c := client2{}                     // Инициализируем клиент для отправки запросов.
+	requests := make([]Request2, 1000) // Создаем слайс из 1000 запросов.
 	for i := 0; i < 1000; i++ {
 		requests[i] = Request2{Payload: strconv.Itoa(i)}
 	}

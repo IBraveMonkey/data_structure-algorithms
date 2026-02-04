@@ -12,58 +12,71 @@ import (
  * завершения любой из них (например, несколько таймаутов или источников данных).
  */
 
+// or рекурсивно объединяет каналы, возвращая канал, который закроется при закрытии любого из входных
 func or(channels ...<-chan interface{}) <-chan interface{} {
 	// Базовые случаи для рекурсии
 	switch len(channels) {
 	case 0:
+		// Если каналов нет, возвращаем nil
 		return nil
 	case 1:
+		// Если канал один, возвращаем его без изменений
 		return channels[0]
 	}
 
+	// Создаем результирующий канал
 	orDone := make(chan interface{})
+
+	// Запускаем горутину для мониторинга каналов
 	go func() {
-		defer close(orDone)
+		defer close(orDone) // Закрываем результирующий канал при выходе
 
 		switch len(channels) {
 		case 2:
+			// Оптимизация для двух каналов: ждем закрытия любого
 			select {
-			case <-channels[0]:
-			case <-channels[1]:
+			case <-channels[0]: // Первый канал закрылся
+			case <-channels[1]: // Второй канал закрылся
 			}
 		default:
-			// Рекурсивно объединяем каналы
+			// Для 3+ каналов: используем рекурсию
 			select {
-			case <-channels[0]:
-			case <-channels[1]:
-			case <-channels[2]:
-			case <-or(append(channels[3:], orDone)...):
+			case <-channels[0]: // Первый канал закрылся
+			case <-channels[1]: // Второй канал закрылся
+			case <-channels[2]: // Третий канал закрылся
+			case <-or(append(channels[3:], orDone)...): // Рекурсивно обрабатываем остальные
+				// Объединяем оставшиеся каналы с orDone для прерывания рекурсии
 			}
 		}
 	}()
 
+	// Возвращаем канал только для чтения
 	return orDone
 }
 
 func main() {
+	// sig создает канал, который закроется через указанное время
 	sig := func(after time.Duration) <-chan interface{} {
 		c := make(chan interface{})
 		go func() {
-			defer close(c)
-			time.Sleep(after)
+			defer close(c)    // Закрываем канал после ожидания
+			time.Sleep(after) // Ждем указанное время
 		}()
 		return c
 	}
 
 	start := time.Now()
+
 	// Ждем закрытия любого из этих каналов
+	// Самый быстрый канал закроется через 1 секунду
 	<-or(
-		sig(2*time.Hour),
-		sig(5*time.Minute),
-		sig(1*time.Second),
-		sig(1*time.Hour),
-		sig(10*time.Second),
+		sig(2*time.Hour),    // Закроется через 2 часа
+		sig(5*time.Minute),  // Закроется через 5 минут
+		sig(1*time.Second),  // Закроется через 1 секунду (самый быстрый!)
+		sig(1*time.Hour),    // Закроется через 1 час
+		sig(10*time.Second), // Закроется через 10 секунд
 	)
 
+	// Выводим время выполнения (должно быть ~1 секунда)
 	fmt.Printf("Завершено через %v\n", time.Since(start))
 }

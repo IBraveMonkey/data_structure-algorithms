@@ -11,55 +11,68 @@ import (
  * Он позволяет эффективно использовать ресурсы, распределяя задачи между несколькими горутинами.
  * Пример использования: обработка изображений, где каждое изображение обрабатывается одним из воркеров.
  */
+
+// Task представляет задачу для обработки
 type Task struct {
-	ID       int
-	Filename string
+	ID       int    // Идентификатор задачи
+	Filename string // Имя файла для обработки
 }
 
+// Process обрабатывает одну задачу (имитация длительной работы)
 func Process(task Task) string {
-	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second) // Имитация обработки (1 секунда)
 
+	// Возвращаем результат обработки
 	return fmt.Sprintf("FileID: %d done - %s \n", task.ID, task.Filename)
 }
 
+// Worker читает задачи из канала и обрабатывает их
 func Worker(taskCh <-chan Task, resCh chan<- string) {
-	for task := range taskCh {
-		resCh <- Process(task)
+	for task := range taskCh { // Читаем задачи пока канал не закрыт
+		resCh <- Process(task) // Обрабатываем и отправляем результат
 	}
 }
 
 func main() {
+	// Константы для настройки пула воркеров
 	const (
-		numWorkers = 3
-		numTasks   = 10
+		numWorkers = 3  // Количество воркеров
+		numTasks   = 10 // Количество задач
 	)
 
-	taskCh := make(chan Task, numTasks)
-	resCh := make(chan string, numTasks)
+	// Создаем буферизованные каналы для задач и результатов
+	taskCh := make(chan Task, numTasks)  // Канал задач
+	resCh := make(chan string, numTasks) // Канал результатов
 
+	// WaitGroup для отслеживания завершения всех воркеров
 	wg := sync.WaitGroup{}
-	wg.Add(numWorkers)
+	wg.Add(numWorkers) // Добавляем количество воркеров
 
+	// Запускаем пул воркеров
 	for range numWorkers {
 		go func() {
-			defer wg.Done()
-			Worker(taskCh, resCh)
+			defer wg.Done()       // Уменьшаем счетчик при завершении
+			Worker(taskCh, resCh) // Воркер обрабатывает задачи
 		}()
 	}
 
+	// Горутина для отправки задач в пул
 	go func() {
-		for i := range numTasks {
+		for i := range numTasks { // Генерируем задачи
+			// Создаем и отправляем задачу в канал
 			taskCh <- Task{ID: i, Filename: fmt.Sprintf("file_%d.jpg", i)}
 		}
-		defer close(taskCh)
+		defer close(taskCh) // Закрываем канал задач после отправки всех
 	}()
 
+	// Горутина для закрытия канала результатов после завершения всех воркеров
 	go func() {
-		wg.Wait()
-		close(resCh)
+		wg.Wait()    // Ждем завершения всех воркеров
+		close(resCh) // Закрываем канал результатов
 	}()
 
+	// Читаем и выводим результаты по мере их поступления
 	for res := range resCh {
-		fmt.Println(res)
+		fmt.Println(res) // Выводим результат обработки
 	}
 }
