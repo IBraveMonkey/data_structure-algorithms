@@ -1,0 +1,5 @@
+Для практики, тут разные задачки для интервью по Go
+
+https://docs.google.com/document/d/1yQX9UFLRtRWwz2edfdYn-QJrjGzvBgnUE6wg78v0U3Y/edit?tab=t.0
+
+https://tech-questions.notion.site/Go-Developer-28c76eca1c334acf8afb16dea6b4bf4b
