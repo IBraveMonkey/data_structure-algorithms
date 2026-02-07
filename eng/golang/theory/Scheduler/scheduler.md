@@ -1,6 +1,6 @@
 # 🗓 Go Scheduler — The Most Detailed Guide in Simple Terms
 
-![Image 1](img/image_1.png)
+![Image 1](/assets/images/scheduler/image_1.png)
 
 Let's design a Go scheduler from scratch — we'll start with the simplest and most understandable naive implementation, and then step by step we'll figure out what flaws it has, and come up with ways to solve them, gradually complicating the general model.
 
@@ -55,12 +55,12 @@ If it seems to you that after reading this section you have remembered little an
 
 As you probably understand, our computer can perform several actions simultaneously (in parallel) only if its processor has several cores.
 
-![Image 2](img/image_2.png)
+![Image 2](/assets/images/scheduler/image_2.png)
 _In the figure, we have two cores, which means that only two tasks can be executed simultaneously, the rest are waiting_
 
 But there is good news — the processor is a very fast thing, so even with one core it can perform a huge number of actions almost simultaneously, quickly switching between them. For example, even on a computer with a single-core processor, you can "simultaneously" watch my videos on YouTube, write code, run it, and perform a number of other tasks. At any given moment, the processor will be performing only one task, but it will switch between them so quickly that it will seem to you like all at once.
 
-![Image 3](img/image_3.png)
+![Image 3](/assets/images/scheduler/image_3.png)
 _A single-core processor performs only one task at a time, but it seems to us that there are many._
 
 ### 3.2 🤔 Thoughts on Event Parallelism
@@ -69,7 +69,7 @@ In general, in a sense, parallelism is a function of time, or rather of a time i
 
 Thus, everything depends on the size of the observation "window". For example, if the operation execution speed is 10ms, and our window is 100ms, then we can say that 10 operations will be executed simultaneously during this time, and no matter in what order. If we take a period of 10ms, then operations will be performed sequentially.
 
-![Image 4](img/image_4.png)
+![Image 4](/assets/images/scheduler/image_4.png)
 _The camera saw these actions as sequential, and our eyes as simultaneous_
 
 ### 3.3 🔄 Concurrency vs Parallelism
@@ -99,7 +99,7 @@ Each thread can be in one of three states:
 - **Runnable**: ready for execution, waiting for its turn.
 - **Waiting**: not ready for execution, as it is waiting for some event. For example, this may be due to an i/o operation, interaction with the OS (syscall), etc.
 
-![Image 5](img/image_5.png)
+![Image 5](/assets/images/scheduler/image_5.png)
 _System threads and their states_
 
 ### 3.5 ⚡️ Context Switching
@@ -112,7 +112,7 @@ The most important thing to understand here: **threads are expensive**. Let's fi
 
 **First**, context switching takes quite a lot of time: need to update data in processor caches, save thread state, etc. The more threads we have in the Runnable state, the more often the context will switch, and the slower the program will work. For example, if there are too many switches, then in total they can take as much time as the execution of tasks themselves (or even more):
 
-![Image 6](img/image_6.png)
+![Image 6](/assets/images/scheduler/image_6.png)
 _Two examples of context switching between tasks. Good: switching happened only once; Bad: switching happened very often, due to which in total we spent about as much time on it as on completing tasks._
 
 **Secondly**, each thread consumes a significant part of our computer's memory: the stack of each thread can often take up to a couple of megabytes (it stores local variables, function call chains, etc.)
@@ -176,7 +176,7 @@ Moving on, our goroutines will obviously need states. Let's borrow them also fro
 
 Thus, we get the scheme:
 
-![Image 7](img/image_7.png)
+![Image 7](/assets/images/scheduler/image_7.png)
 _Goroutines and their states_
 
 Does it remind you of anything? This is an exact copy of the OS scheduler scheme that I cited above, only the entity names differ. Indeed, in the most basic understanding, an analogy can be drawn here.
@@ -190,7 +190,7 @@ Next, we need to introduce two more entities:
 
 Now the picture is as follows:
 
-![Image 8](img/image_8.png)
+![Image 8](/assets/images/scheduler/image_8.png)
 _The Processor takes a goroutine and puts it into the Machine for execution_
 
 Essentially, a **Machine** is just a system thread. That is, the Processor, placing a goroutine into the Machine, simply binds this goroutine to a thread. And since this is so, I will further call threads exactly threads, not machines, it is more convenient for me. I cited the term "Machine" here only so that you better understand the connection of my article with other materials.
@@ -201,7 +201,7 @@ So, we have a set of basic entities. How will we achieve concurrent and parallel
 
 ### 4.1 1️⃣ Create a Thread for Each Call — 1:1 Model
 
-![Image 9](img/image_9.png)
+![Image 9](/assets/images/scheduler/image_9.png)
 _1:1 Model — a new thread is created for each new goroutine_
 
 The simplest thing that can be invented is to create a separate thread for each goroutine, and after completion destroy these threads as unnecessary. That is, we pass all new goroutines to the Processor, it requests a new thread for each of them, and when the goroutine finishes work, its thread is utilized.
@@ -210,7 +210,7 @@ This is called — **1:1 Model**, that is, as many goroutines as threads. The so
 
 By the way, there is also a **1:N Model** — this is when all goroutines (or their analogues) always use only one OS thread. From the reasoning above, we understand that this does not suit us — after all, in this case we lose the opportunity to run anything in parallel. But it is useful to understand that it happens this way too.
 
-![Image 10](img/image_10.png)
+![Image 10](/assets/images/scheduler/image_10.png)
 _1:N Model — we always have only one thread, regardless of the number of goroutines_
 
 Essentially, the 1:1 model delegates all the work to the OS scheduler. But does everything suit us here? Unfortunately, no. From the introductory educational program, we remember that creating and destroying threads is too expensive, and we want to minimize this. Let's think how.
@@ -220,7 +220,7 @@ Essentially, the 1:1 model delegates all the work to the OS scheduler. But does 
 Okay, if creating and destroying threads is expensive, let's not destroy them, and instead of creating, if possible, reuse existing ones.
 That is, as before, we will create new threads for goroutines, but now only when necessary. And when a thread becomes free (for example, a goroutine has finished its work), the Processor instead of destroying will put it into the pool to hold for other goroutines. The waiting thread will not perform work, which means it will not occupy the processor core.
 
-![Image 11](img/image_11.png)
+![Image 11](/assets/images/scheduler/image_11.png)
 _Three goroutines in different states: Running - executing on a thread, Runnable - takes a thread from the pool, Done - returns the used thread to the pool_
 
 Great, we optimized our scheduler by getting rid of many expensive and unnecessary thread creation and destruction operations! Is everything good now?
@@ -232,22 +232,22 @@ If we do not want to create too many threads, it is obvious that we just need to
 
 1.  Check if there is a free thread in the pool. If there is, take it to execute the goroutine.
 
-    ![Image 12](img/image_12.png)
+    ![Image 12](/assets/images/scheduler/image_12.png)
     _There are free threads in the pool, taking from there_
 
 2.  If not, check how many threads are currently in use. If less than the limit we set, then create a new thread and give it the goroutine. When the goroutine finishes work, send this thread to the pool.
 
-    ![Image 13](img/image_13.png)
+    ![Image 13](/assets/images/scheduler/image_13.png)
     _There are no free threads in the pool. We see that earlier we created only 1 thread out of 8 possible, so we create a new one._
 
 3.  If the number of threads has reached the limit, the goroutine will wait until one of the previously created ones becomes free, returning to the pool. As soon as it becomes free, we will pass the goroutine to it for work.
 
-    ![Image 14](img/image_14.png)
+    ![Image 14](/assets/images/scheduler/image_14.png)
     _There are no free threads in the pool, and their limit is exhausted — other goroutines are currently executing on them. The current goroutine will have to wait._
 
 Thus, we have the concept of **waiting goroutines**. But where will they wait? Let's just line them up in a queue, and call this queue **Global Run Queue (GRQ)**. Thus, every new goroutine that did not get a thread will be sent to the GRQ and wait for its hour.
 
-![Image 15](img/image_15.png)
+![Image 15](/assets/images/scheduler/image_15.png)
 _The goroutine did not get a thread, it is sent to wait in the Global Run Queue_
 
 Since queues are different, it is worth clarifying — we will use a **FIFO queue (first in, first out)**, this is when those goroutines that came first are taken first. It turns out logically and honestly — the earlier the goroutine came, the earlier it receives a thread.
@@ -259,7 +259,7 @@ Let's now think about what limit on the number of threads we want to set — tha
 
 The answer lies on the surface — we will create exactly as many threads as there are cores available to us, and then not a single core will be idle without work. Creating even more threads makes no sense, because then some of them will definitely stand idle waiting for a free core. That is, if we have 8 cores and 10 threads, then even in the best case, 2 threads will be idle.
 
-![Image 16](img/image_16.png)
+![Image 16](/assets/images/scheduler/image_16.png)
 _In the diagram, we have two CPU cores and, accordingly, two worker threads. Only two goroutines can be executed simultaneously, the rest are waiting for their turn._
 
 > [!IMPORTANT]
@@ -291,7 +291,7 @@ Behavior where several concurrent processes gain access to a shared resource is 
 
 To avoid this, we use the simplest synchronization primitive — **mutex (lock)**. If you are not familiar with it, I advise you to definitely get acquainted — this is a very simple but important mechanism that is very common. In simple terms, with its help, each Processor will be able to temporarily block the queue to work with it — in our case, to get a goroutine out of there. While it is blocked, no one else can interact with it. Thus, while one Processor takes a goroutine from the GRQ, the other Processors will have to wait.
 
-![Image 17](img/image_17.png)
+![Image 17](/assets/images/scheduler/image_17.png)
 _The Processor on the left cannot take a goroutine from the GRQ because the Processor on the right blocked it for the time of its work._
 
 By the way, we are already starting to approach the real Go scheduler, it also:
@@ -317,7 +317,7 @@ At the same time, we do not get rid of the GRQ with its mutex, it will still be 
 
 Now our entire scheme looks like this:
 
-![Image 18](img/image_18.png)
+![Image 18](/assets/images/scheduler/image_18.png)
 _In this image we have CPU cores and each of them corresponds to its own thread, its own Processor and its own LRQ. Also depicted here is the GRQ, which is not attached to any of the Processors._
 
 In the resulting scheme, we see goroutines in the Runnable state (located in the queue) and Running (executed by the Processor). Did we forget anything? And where are the Waiting goroutines? Let me remind you, these are those goroutines that are blocked by something and cannot be started. So where to put them? Maybe we need to start a separate queue in the Processor for them — Wait Queue?
@@ -344,12 +344,12 @@ True, another problem may arise here — if the LRQ of all processors is constan
 
 So, our scheduler is getting more complicated, but it works better and becomes more and more like a real one. However, it is still far from ideal. What problem worries us this time? You probably remember that from the very beginning we were very worried about the problem of idle cores. It would seem that we got rid of this problem a long time ago, but no. Look at this diagram:
 
-![Image 19](img/image_19.png)
+![Image 19](/assets/images/scheduler/image_19.png)
 _Goroutines are sad because they have to wait, although we have a free Processor. And we are sad because we have a whole processor core idle without work._
 
 So, one Processor has a lot of work, and another has none at all. How to be? Let's teach Processors to steal work from each other! Namely, if the LRQ of one Processor is empty, then it will peek into the LRQ of any other Processor and take a goroutine from there. Or even better — let it take half of the goroutines from there at once, so as not to walk then once again.
 
-![Image 20](img/image_20.png)
+![Image 20](/assets/images/scheduler/image_20.png)
 _Processor #2 was out of work, so it stole half of the goroutines from the neighbor. Now he has something to do!_
 
 This way we will automatically balance the work between all our Processors. And the full algorithm will now look like this:
@@ -363,7 +363,7 @@ This way we will automatically balance the work between all our Processors. And 
 
 How good our Scheduler has become! But let's find a problem here too. What if the goroutine performs some blocking operation, for example a system call (**syscall**)? Then this goroutine will block a whole thread for us, and the processor core will again stand idle, despite the fact that we have Runnable goroutines in the queue.
 
-![Image 21](img/image_21.png)
+![Image 21](/assets/images/scheduler/image_21.png)
 _The goroutine performed a syscall and blocked the thread - the CPU core stands idle without work_
 
 Once again I draw your attention — not only the goroutine with the Processor are blocked, but the thread itself is also blocked by the system call. That is, we cannot simply send this waiting goroutine to wait somewhere else, giving the thread some other work. Therefore, we will have to send them somewhere together — both the thread and the goroutine.
@@ -374,7 +374,7 @@ In the meantime, let's do this — imagine that you called a colleague and asked
 So, a call to a colleague — this is the syscall, and you are the thread that performs it.
 So, if a thread is blocked by a system call, it can no longer perform work. In this state, it is not very useful to us, so we simply untie it from the Processor, create a new thread and bind it to the Processor. Such a mechanism is called - **handoff**.
 
-![Image 22](img/image_22.png)
+![Image 22](/assets/images/scheduler/image_22.png)
 _While thread #1 awaits a response from the system call, its Processor will be bound to another free thread_
 
 Returning to the analogy with a question to a colleague — while you serve chatting with him, your boss asks to free up the work computer so that another colleague can work on it (yes, your company has hard times and not enough computers for everyone...)
@@ -389,7 +389,7 @@ Some system calls are short-lived, that is, they block threads for a very short 
 
 The process that performs these checks will run constantly in the background, and it is called - **Sysmon**.
 
-![Image 23](img/image_23.png)
+![Image 23](/assets/images/scheduler/image_23.png)
 _Sysmon monitors the time, and if the syscall drags on, it initiates a handoff_
 
 By the way, on which thread will Sysmon itself run? Obviously, we cannot entrust this to threads that run goroutines, since they can fall asleep at any moment (and this is exactly what we are trying to track). And they have enough of their own affairs without that. It turns out that we need to start a separate thread for monitoring, which will perform its work independently of worker threads.
@@ -417,7 +417,7 @@ The mechanisms listed above allow doing like this:
 2.  Periodically check if response for system call has arrived.
 3.  Thus, work with system call occurs asynchronously.
 
-![Image 24](img/image_24.png)
+![Image 24](/assets/images/scheduler/image_24.png)
 _We register syscall in epoll, thanks to which our thread remained free and can execute other goroutines_
 
 To make it even clearer, let's return to the example with a call to a colleague from the section about Handoff.
@@ -431,7 +431,7 @@ If a goroutine intends to perform a system call that can be executed asynchronou
 2.  Transfer the goroutine to the Waiting state and pass it to the Netpoller.
 3.  The Processor becomes free to execute other goroutines.
 
-![Image 25](img/image_25.png)
+![Image 25](/assets/images/scheduler/image_25.png)
 _The goroutine performed an asynchronous syscall, and we passed it to the Network Poller_
 
 Once again I emphasize the main feature of this mechanism — waiting goroutines do not occupy a thread, and can be in this state as long as necessary, without slowing down the program in any way.
@@ -443,7 +443,7 @@ When the syscall ends, the goroutine switches back to the runnable state, that i
 4.  If failed, check GRQ.
 5.  Check Network Poller.
 
-![Image 26](img/image_26.png)
+![Image 26](/assets/images/scheduler/image_26.png)
 _The Processor ran out of work and went to the netpoller to see if there were any liberated goroutines there that could be taken back into work._
 
 There is still a small problem here — it may turn out that Processors always have enough work, and they stop checking netpoller at all, or do it very rarely. This is not very fair to the goroutines waiting there, so we will teach Sysmon to make such checks in the background — if no one has addressed the netpoller for more than 10ms, Sysmon will do it. At the same time, it will move the liberated goroutines to the GRQ, and then the Processors themselves will perform balancing using the mechanisms we discussed above (remember that GRQ is checked out of turn once per 1/61 iteration).
@@ -476,7 +476,7 @@ The simplest thing that can be invented here is simply to execute all goroutines
 
 Do you already understand what the problem is here? And what if we have long or even eternal goroutines? For example, nothing prevents us from starting a hundred goroutines that will periodically check something throughout the entire operation of the program. But since we have a limited number of cores and, accordingly, Processors — say, 8 pieces, only 8 will be executed from all these goroutines, the rest will wait forever.
 
-![Image 27](img/image_27.png)
+![Image 27](/assets/images/scheduler/image_27.png)
 _The current goroutine has been executing for a very long time, and the rest are forced to stand idle, waiting for it_
 
 This is bad, because each goroutine must receive its share of processor time. How will we solve? Very simply — at certain points in time, the goroutine will check if it is time for it to interrupt and let others work.
@@ -489,7 +489,7 @@ Okay, here the goroutine hit the check point. And by what sign will it understan
 
 Now let's figure out who and when will inform the goroutine about the need to interrupt. And here our old acquaintance — **Sysmon** — will help us again. Let's add one more task to him. In addition to checking blocked syscalls, he will also check the execution time of active goroutines. If any of them works too long (more than 10ms), Sysmon will set its flag `stackguard=stackPreempt` so that at the next check it interrupts.
 
-![Image 28](img/image_28.png)
+![Image 28](/assets/images/scheduler/image_28.png)
 _The goroutine checks the stackguard value set by Sysmon. If it equals stackPreempt, then it transfers control to the scheduler_
 
 This approach to scheduling is called **cooperative multitasking** — this is when processes themselves decide when to give control to others. Unlike preemptive multitasking of the operating system, where a thread can be interrupted at any moment, here goroutines themselves control the moment of control transfer.
@@ -522,7 +522,7 @@ func main() {
 
 We have a serious problem — the goroutine blocked the entire Processor and is not going to give it back! It doesn't call functions, which means it doesn't check the stackguard, it doesn't perform blocking operations, it just steals all resources, and our Sysmon can't do anything about it.
 
-![Image 29](img/image_29.png)
+![Image 29](/assets/images/scheduler/image_29.png)
 _Sysmon asked the goroutine to yield the Processor by setting the stackguard flag, but the goroutine is busy working and does not check it_
 
 How can we be? We cannot reach the goroutine in any way — no matter how we transmit messages to it, it simply does not read them, dealing with other work without stopping. We need some mechanism that will interrupt it itself from the outside. Fortunately, the OS provides us with such a mechanism — these are **signals**.
@@ -554,7 +554,7 @@ Well, here we have built an effective scheduler — it uses available processor 
 
 And now it is very useful to look at and examine the final scheme entirely:
 
-![Image 30](img/image_30.png)
+![Image 30](/assets/images/scheduler/image_30.png)
 _General diagram of the internal structure of the Go scheduler_
 
 Words of gratitude to Nikolai Tuzov! - link - https://habr.com/ru/articles/891426/
