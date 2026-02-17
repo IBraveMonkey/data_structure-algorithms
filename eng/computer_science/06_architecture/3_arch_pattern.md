@@ -1,5 +1,6 @@
 # 🏗️ Architectural Patterns
 
+
 ## 📑 Table of Contents
 1. [Clean / Onion / Hexagonal Architecture](#clean-onion-hexagonal-architecture)
 2. [CQRS (Command and Query Responsibility Segregation)](#cqrs)
@@ -9,9 +10,163 @@
 
 ---
 
+## 📘 Basic Concepts
+
+Before diving into architectural patterns, let's understand the basic concepts that will appear throughout:
+
+### 🧱 Entity
+**What it is:** An object representing a business object with a unique identifier and lifecycle.  
+**Example:** User, Order, Product.  
+**Feature:** Identified not by its attributes, but by a unique ID.
+
+```go
+type User struct {
+    ID    string // Unique identifier
+    Name  string
+    Email string
+}
+```
+
+### 📦 Value Object
+**What it is:** An object whose value is determined by its attributes, not identity.  
+**Example:** Address, Money, Date Range.  
+**Feature:** Has no unique ID, equality is determined by content.
+
+```go
+type Money struct {
+    Amount   float64
+    Currency string
+}
+
+type Address struct {
+    Street  string
+    City    string
+    Country string
+}
+```
+
+### 🏛️ Repository
+**What it is:** A pattern providing abstraction for data access.  
+**Purpose:** Hide storage and retrieval details of entities.  
+**Example:** Interface for working with users in DB, without knowing if it's PostgreSQL or MongoDB underneath.
+
+```go
+type UserRepository interface {
+    Save(user *User) error
+    FindByID(id string) (*User, error)
+    FindAll() ([]*User, error)
+}
+```
+
+### 📄 Interface
+**What it is:** A contract defining a set of methods that a type must implement.  
+**Purpose:** Ensure polymorphism and loose coupling.  
+**Example:** Notification interface that can be implemented differently (Email, SMS, Push).
+
+```go
+type Notifier interface {
+    Send(message string) error
+}
+
+type EmailNotifier struct{}
+func (e *EmailNotifier) Send(message string) error {
+    // Send via Email
+    return nil
+}
+
+type SMSNotifier struct{}
+func (s *SMSNotifier) Send(message string) error {
+    // Send via SMS
+    return nil
+}
+```
+
+### 🔌 Adapter
+**What it is:** A component that allows objects with incompatible interfaces to work together.  
+**Purpose:** Convert one class's interface to an interface expected by the client.  
+**Example:** PostgreSQL adapter implementing the repository interface.
+
+```go
+type PostgresUserRepository struct {
+    db *sql.DB
+}
+
+// Implements the UserRepository interface
+func (r *PostgresUserRepository) Save(user *User) error {
+    // Save to PostgreSQL
+    return nil
+}
+```
+
+### 🎯 Use Case
+**What it is:** A business operation describing how the system should respond to a user request.  
+**Purpose:** Encapsulate the business logic of a specific operation.  
+**Example:** Creating a user, placing an order.
+
+```go
+type CreateUserUseCase struct {
+    userRepository UserRepository
+    notifier       Notifier
+}
+
+func (uc *CreateUserUseCase) Execute(name, email string) error {
+    user := &User{
+        ID:    generateID(),
+        Name:  name,
+        Email: email,
+    }
+    
+    err := uc.userRepository.Save(user)
+    if err != nil {
+        return err
+    }
+    
+    uc.notifier.Send("User created: " + user.Name)
+    return nil
+}
+```
+
+### 🔄 Dependency Injection (DI)
+**What it is:** A pattern where an object receives its dependencies from outside, rather than creating them itself.  
+**Purpose:** Reduce coupling between components.  
+**Example:** Passing a repository to a service constructor.
+
+```go
+// Instead of creating inside
+type UserService struct {
+    repo UserRepository // Dependency passed from outside
+}
+
+func NewUserService(repo UserRepository) *UserService {
+    return &UserService{repo: repo}
+}
+```
+
+### 🧭 Ports and Adapters
+**What it is:** An architectural pattern separating business logic from technical details.  
+**Purpose:** Make the application independent from external factors (DB, UI, frameworks).  
+**Principle:** The application core depends on "ports" (interfaces), while external components depend on "adapters" implementing these ports.
+
+### 📋 DTO (Data Transfer Object)
+**What it is:** A simple object used for transferring data between layers or systems.  
+**Purpose:** Simplify data transfer, avoid passing entire entities.  
+**Example:** An object for API response with a limited set of fields.
+
+```go
+type UserResponseDTO struct {
+    ID    string `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}
+```
+
+---
+
+
 ## 1. 🏗️ Domain-Centric Architectures: Evolution and Implementation
 
 First, we need to understand the main point: why were all these "onions" and "hexagons" invented in the first place?
+
 
 ### 🚀 Evolution: From N-Tier to Domain-Centric
 
@@ -26,12 +181,14 @@ We place Business Logic at the center and make the Database and UI "pluggable de
 
 ---
 
+
 ### 🧅 1.1 Onion Architecture
 *Author: Jeffrey Palermo (2008)*
 
 ![Onion Architecture](/assets/images/architecture/onion.png)
 
 Onion Architecture emphasizes that an application is a set of concentric circles. The closer to the center, the "cleaner" and more important the code is.
+
 
 #### 🏗️ Layers (from the inside out):
 1.  **Domain Model (Core)**: Only entities (`Order`, `User`) and basic rules. This code depends on nothing.
@@ -43,6 +200,7 @@ Onion Architecture emphasizes that an application is a set of concentric circles
 
 ---
 
+
 ### ⬡ 1.2 Hexagonal Architecture (Ports and Adapters)
 *Author: Alistair Cockburn (2005)*
 
@@ -50,10 +208,12 @@ Onion Architecture emphasizes that an application is a set of concentric circles
 
 While Onion is about layers, Hexagonal is about **pluggability**.
 
+
 #### 🧩 Core Concepts:
 *   **The Inside (Application Core)**: Our application. It knows nothing about HTTP, gRPC, or PostgreSQL.
 *   **Ports**: Interfaces (sockets). The application says: "I need someone who can save a User" (`UserRepository`).
 *   **Adapters**: Plugs. `PostgresAdapter` is a plug that fits into the `UserRepository` socket.
+
 
 #### 🔄 Types of Ports:
 1.  **Driving (Inputs)**: Those that drive our application to do something (REST API, CLI, Tests).
@@ -63,12 +223,14 @@ While Onion is about layers, Hexagonal is about **pluggability**.
 
 ---
 
+
 ### 🏛️ 1.3 Clean Architecture
 *Author: Robert "Uncle Bob" Martin (2012)*
 
 ![Clean Architecture](/assets/images/architecture/clear.jpg)
 
 This is the "strictest" version of the principle. It combines the ideas of Onion and Hexagonal architectures, focusing on the Dependency Rule.
+
 
 #### 🏗️ The Four Circles (The Dependency Rule):
 1.  **Entities (Yellow Circle)**: High-level business rules. They change the least frequently.
@@ -81,6 +243,7 @@ When a Use Case wants to save data, it doesn't call the DB directly. It calls an
 
 ---
 
+
 ### 📊 Comparison and Real-world Choice
 
 | Feature | Onion | Hexagonal | Clean |
@@ -88,6 +251,7 @@ When a Use Case wants to save data, it doesn't call the DB directly. It calls an
 | **Focus** | Layers and Dependency Inversion | Interchangeability (Ports) | Boundaries and separation rules |
 | **DB** | Infrastructure detail | Driven Adapter | Detail (outer circle) |
 | **Business Logic** | At the very center | Inside the hexagon | In Entities and Use Cases |
+
 
 #### 🛠️ What it looks like in folders (Go-style):
 ```text
@@ -103,6 +267,7 @@ When a Use Case wants to save data, it doesn't call the DB directly. It calls an
 > **For the experienced**: Don't get hung up on names. What matters is one thing — **isolate business rules**. If you can test your logic without starting Docker with a database, you're on the right track.
 
 ---
+
 
 #### 🟢 Interface Adapters
 
@@ -184,6 +349,7 @@ func (r *PostgresUserRepository) GetByEmail(email string) (*domain.User, error) 
 
 ---
 
+
 #### 🔵 Frameworks & Drivers
 
 **What’s here:**
@@ -230,6 +396,7 @@ func main() {
 
 ---
 
+
 ### 🔷 Alternatives and Terminology
 
 The core idea remains the same, but with different terminology:
@@ -238,6 +405,7 @@ The core idea remains the same, but with different terminology:
 - **Adapter** — a implementation of that interface (e.g., `PostgresUserRepository`)
 
 ```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'lineColor': '#009688', 'primaryColor': '#009688', 'primaryTextColor': '#009688', 'attributeBkg': '#009688', 'attributeTextColor': '#009688', 'signalColor': '#009688', 'actorLineColor': '#009688', 'nodeBorder': '#009688', 'clusterBorder': '#009688', 'textColor': '#009688', 'fontSize': '16px' } } }%%
 flowchart LR
     subgraph External["External World"]
         HTTP[HTTP API]
@@ -256,6 +424,14 @@ flowchart LR
     UseCases --> PortOut["Output Port<br/>(Interface)"]
     PortOut -->|Adapter| Postgres
     PortOut -->|Adapter| Redis
+
+
+
+linkStyle default stroke:#009688,stroke-width:2px;
+
+
+
+
 ```
 
 **Pros:**
@@ -263,6 +439,7 @@ flowchart LR
 - Easy to test (using mock adapters)
 
 ---
+
 
 ### ✅ Benefits of This Architecture
 
@@ -276,15 +453,18 @@ flowchart LR
 
 ---
 
+
 ## 2. ⚡ CQRS
 
 **Command and Query Responsibility Segregation** — splitting responsibility for Writing and Reading.
+
 
 ### 🤔 Why?
 Typically, we read data much more often than we write it. In a classic architecture, we use the same model (and DB table) for both `SELECT` and `UPDATE`. This creates problems with scaling and performance.
 
 *   **Command**: Changes state ("Create order", "Change address"). Contains business logic and validation.
 *   **Query**: Reads data. As simple as possible, often without any logic, just returns a DTO (Data Transfer Object).
+
 
 ### 🏗️ How does it work in reality?
 Most often, CQRS is used alongside database separation:
@@ -296,12 +476,14 @@ Most often, CQRS is used alongside database separation:
 
 ---
 
+
 ## 3. 📡 Event Driven Architecture (EDA)
 
 An architecture where systems communicate through **events**.
 
 *   **Event**: A fact that has already happened ("OrderCreated", "PaymentReceived"). It cannot be undone.
 *   **Message Broker**: Kafka, RabbitMQ, NATS.
+
 
 ### 🎞️ Event Sourcing (ES)
 We don't store the current state of an object (e.g., "Balance: 100"). Instead, we store a **chain of all events** that led to that state.
@@ -317,17 +499,20 @@ We don't store the current state of an object (e.g., "Balance: 100"). Instead, w
 
 ---
 
+
 ## 4. 📜 Saga Pattern
 
 Used for managing distributed transactions in microservices. In the cloud, you can't perform a `BEGIN TRANSACTION ... COMMIT` across three databases simultaneously.
 
 There are two ways to implement a Saga:
 
+
 ### 🩰 4.1 Choreography
 Microservices communicate with each other directly through events. There is no central controller.
 *   **How it works**: Service A does its work -> throws an event -> Service B hears it -> does its work -> throws an event.
 *   **Pros**: No single point of failure, easy to add new services.
 *   **Cons**: Hard to understand what's happening (tangled chain), risk of cyclic dependencies.
+
 
 ### 💂 4.2 Orchestration
 There is a central "conductor" (Orchestrator) that tells everyone what to do.
@@ -336,6 +521,7 @@ There is a central "conductor" (Orchestrator) that tells everyone what to do.
 *   **Cons**: The Orchestrator becomes a complex and critical component (if it fails, the process stops).
 
 ---
+
 
 ## 🎯 Summary: What to choose?
 
@@ -349,17 +535,20 @@ There is a central "conductor" (Orchestrator) that tells everyone what to do.
 
 ---
 
+
 ## 5. 💉 IoC, DI, and DIP: Taming Dependencies
 
 Many confuse these three concepts, though they exist at different levels: **IoC** is a general idea, **DI** is a method of implementation, and **DIP** is a design rule.
 
 ---
 
+
 ### 🔄 5.1 Inversion of Control (IoC)
 The concept where control over the program execution flow is handed over from your code to something external (a framework).
 
 > [!NOTE]
 > **The Hollywood Principle**: "Don't call us, we'll call you."
+
 
 #### 🧩 What's the difference?
 *   **Library**: You call the library. You are the boss; you decide when and what to do.
@@ -371,8 +560,10 @@ The concept where control over the program execution flow is handed over from yo
 
 ---
 
+
 ### 🔌 5.2 Dependency Injection (DI)
 A specific pattern that implements IoC. Its essence: an object does not create its dependencies itself, but **receives them from the outside**.
+
 
 #### ❌ Bad: Hard Coupling
 Imagine you bought a lamp, and the cord is soldered directly into the wall. To replace the lamp, you have to break the wall.
@@ -387,6 +578,7 @@ func NewService() *Service {
     }
 }
 ```
+
 
 #### ✅ Good: Constructor Injection
 The lamp now has a plug. You can plug it into any socket (file, console, database).
@@ -403,11 +595,13 @@ func NewService(l Logger) *Service {
 
 ---
 
+
 ### 📐 5.3 Dependency Inversion Principle (DIP)
 The "D" in SOLID. It dictates **HOW** dependency arrows should be oriented.
 
 1.  High-level modules (Business Logic) should not depend on low-level modules (DB, Network).
 2.  Both should depend on **abstractions** (interfaces).
+
 
 #### 🏗️ Why is it an "Inversion"?
 In normal code, the arrow goes from Logic to DB: `Logic -> DB`. 
@@ -415,7 +609,9 @@ In DIP, we place an Interface between them: `Logic -> [Interface] <- DB`. Now th
 
 ---
 
+
 ### 💻 Code Evolution: From Junior to Pro
+
 
 #### Stage 1: "I'll do it myself" (Junior)
 Problem: If we want to switch from Email to SMS, we have to change the entire `OrderService` class.
@@ -428,6 +624,7 @@ func (s *OrderService) Confirm() {
     s.notifier.Send("Order confirmed")
 }
 ```
+
 
 #### Stage 2: "Interfaces are power" (PRO)
 Now `OrderService` says: "I don't care HOW you notify, just give me something that can `Notify`."
@@ -447,6 +644,7 @@ func NewOrderService(n Notifier) *OrderService {
 }
 ```
 
+
 #### Stage 3: Assembly in Main (Architect)
 In `main.go`, we assemble our application like a LEGO set. This is where we decide what to "plug in" to the service.
 ```go
@@ -463,7 +661,28 @@ func main() {
 }
 ```
 
+
 ### 🎯 Why do all this? (Summary)
 1.  **Testability**: You can easily swap a real DB for a "fake" (Mock) one in tests.
 2.  **Flexibility**: Changing technologies (e.g., MySQL to MongoDB) doesn't touch your business logic.
 3.  **Cleanliness**: Code becomes modular. You can change one part without worrying about the whole building collapsing.
+
+<!-- QUIZ_START 
+[
+    {
+        "question": "What is at the center of Domain-Centric architectures (Onion, Clean, Hexagonal)?",
+        "options": ["The Database", "The User Interface (UI)", "Business Logic (Domain Model / Entities)", "The Web Framework"],
+        "correctIndex": 2
+    },
+    {
+        "question": "What is the core concept of Hexagonal Architecture (Ports and Adapters)?",
+        "options": ["Using exactly 6 layers of code", "The application core knows nothing of the outside world and communicates via interfaces (ports) that adapters plug into", "Using only PostgreSQL", "Avoiding unit tests"],
+        "correctIndex": 1
+    },
+    {
+        "question": "How does the Dependency Inversion Principle (DIP) change the relationship between logic and the database?",
+        "options": ["Logic depends directly on the DB", "The DB controls the logic", "An interface is placed between them, which both logic and the DB implementation depend on", "The connection is completely severed"],
+        "correctIndex": 2
+    }
+]
+QUIZ_END -->

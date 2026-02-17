@@ -1,5 +1,6 @@
 # 🎯 Programming Paradigms
 
+
 ## 📑 Table of Contents
 1. [What is a paradigm?](#what-is-a-paradigm)
 2. [Procedural Programming](#procedural-programming)
@@ -9,6 +10,7 @@
 6. [Multi-paradigm Languages](#multi-paradigm-languages)
 
 ---
+
 
 ## 🤔 What is a paradigm?
 
@@ -24,11 +26,14 @@ Three main paradigms:
 
 ---
 
+
 ## 🔧 Procedural Programming
+
 
 ### Core Idea 💡
 
 A program is a **sequence of commands** that the computer executes one after another. Like a cooking recipe: take eggs → crack → whisk → fry.
+
 
 ### Key Elements 🔗
 
@@ -36,6 +41,7 @@ A program is a **sequence of commands** that the computer executes one after ano
 2. **Functions/Procedures** — groups of instructions
 3. **Conditions** — `if/else`
 4. **Loops** — `for/while`
+
 
 ### Example in C
 
@@ -66,6 +72,7 @@ int main() {
 }
 ```
 
+
 ### Example in Go
 
 ```go
@@ -95,6 +102,7 @@ func main() {
 }
 ```
 
+
 ### Pros and Cons
 
 ✅ **Pros**:
@@ -112,7 +120,9 @@ func main() {
 
 ---
 
+
 ## 🧱 Object-Oriented Programming (OOP)
+
 
 ### Core Idea 💡
 
@@ -120,6 +130,7 @@ A program is the **interaction of objects**. An object contains both data and th
 
 > [!TIP]
 > Read more about OOP in the file [`1_OOP.md`](file:///Users/ilasgibadullin/Documents/develop/projects/brave_monkey_education/materials/eng/computer_science/architecture/1_OOP.md)
+
 
 ### Quick Example in Go 📝
 
@@ -147,7 +158,7 @@ func (acc *BankAccount) GetBalance() int {
 func main() {
     // Create an object
     account := BankAccount{
-        owner:   "Ivan",
+        owner:   "Boris",
         balance: 1000,
     }
     
@@ -158,9 +169,10 @@ func main() {
 
 **Output:**
 ```
-Ivan deposited 500 into the account
+Boris deposited 500 into the account
 Balance: 1500
 ```
+
 
 ### Benefits of OOP ✨
 
@@ -170,17 +182,21 @@ Balance: 1500
 
 ---
 
+
 ## 🧮 Functional Programming
+
 
 ### Core Idea 💡
 
 A program is **calculation through functions**, like in mathematics: `f(x) = x + 2`. Functions do not change data; they create new data.
+
 
 ### Key Principles 🧩
 
 1. **Pure Functions**: Same input → same output (no side effects)
 2. **Immutability**: Data is not changed; new data is created
 3. **Higher-Order Functions**: Functions can take and return other functions
+
 
 ### Example: Pure Function
 
@@ -198,6 +214,7 @@ func increment(n int) int {
     return n + 1
 }
 ```
+
 
 ### Example: Immutability
 
@@ -227,6 +244,7 @@ func main() {
     fmt.Println(doubled)  // [2, 4, 6] - new array
 }
 ```
+
 
 ### Example: Higher-Order Functions
 
@@ -262,6 +280,7 @@ func main() {
 }
 ```
 
+
 ### Closures 🔐
 
 A function "remembers" variables from its outer scope.
@@ -294,6 +313,7 @@ func main() {
 }
 ```
 
+
 ### Pros and Cons
 
 ✅ **Pros**:
@@ -311,6 +331,7 @@ func main() {
 
 ---
 
+
 ## 📊 Comparison of Paradigms
 
 | Feature | Procedural | OOP | Functional |
@@ -322,6 +343,7 @@ func main() {
 | **Complexity** | 🟢 Low | 🟡 Medium | 🔴 High (for beginners) |
 | **Suitable For** | Scripts, systems | Large applications | Data, concurrency |
 | **Example Languages** | C, Pascal, Go (basic) | Java, C++, Python, Go | Haskell, Erlang, Clojure |
+
 
 ### Example of One Task in Different Styles
 
@@ -422,9 +444,11 @@ Functional: 56
 
 ---
 
+
 ## 🌈 Multi-paradigm Languages
 
 Modern languages support **multiple paradigms** simultaneously!
+
 
 ### Go — Multi-paradigm
 
@@ -465,15 +489,18 @@ func calculateTotalFunctional(prices []float64, discount func(float64) float64) 
 }
 ```
 
+
 ### Python, JavaScript — Also Multi-paradigm
 
 You can choose the style based on the task!
 
 ---
 
+
 ## 💡 When to Use Which Paradigm?
 
 ```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'lineColor': '#009688', 'primaryColor': '#009688', 'primaryTextColor': '#009688', 'attributeBkg': '#009688', 'attributeTextColor': '#009688', 'signalColor': '#009688', 'actorLineColor': '#009688', 'nodeBorder': '#009688', 'clusterBorder': '#009688', 'textColor': '#009688', 'fontSize': '16px' } } }%%
 flowchart TD
     Start{What is the task?}
     
@@ -484,7 +511,16 @@ flowchart TD
     Proc --> ProcEx[Examples: CLI utilities,<br/>simple scripts]
     OOP --> OOPEx[Examples: Web applications,<br/>games, GUI]
     Func --> FuncEx[Examples: ETL pipelines,<br/>parallel computing]
+
+
+
+linkStyle default stroke:#009688,stroke-width:2px;
+
+
+
+
 ```
+
 
 ### Recommendations
 
@@ -505,6 +541,7 @@ flowchart TD
 
 ---
 
+
 ## 🎯 Summary
 
 - **Procedural** — step-by-step instructions (simple and straightforward code)
@@ -512,3 +549,24 @@ flowchart TD
 - **Functional** — calculation via pure functions (reliable for concurrency)
 
 Top programmers **know all paradigms** and choose the right one for the specific task! 🚀
+
+<!-- QUIZ_START 
+[
+    {
+        "question": "What is the key difference between declarative programming (e.g., SQL or functional style) and imperative programming?",
+        "options": ["Declarative is faster", "Declarative describes the desired result (WHAT to do) rather than the step-by-step algorithm (HOW to do it)", "Declarative requires using only OOP", "Declarative does not support variables"],
+        "correctIndex": 1
+    },
+    {
+        "question": "What defines a 'pure function' in functional programming?",
+        "options": ["A function without comments", "A function that doesn't use loops", "A function whose output depends only on its input arguments and has no side effects", "A function written in Haskell"],
+        "correctIndex": 2
+    },
+    {
+        "question": "Which paradigm is best suited for modeling complex systems with many interacting entities (e.g., creatures in a game)?",
+        "options": ["Procedural programming", "Object-Oriented Programming (OOP)", "Functional programming", "Low-level Assembly"],
+        "correctIndex": 1
+    }
+]
+QUIZ_END -->
+

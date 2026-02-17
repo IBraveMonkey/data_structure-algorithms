@@ -4,10 +4,12 @@ SOLID is an acronym for five principles of object-oriented programming and desig
 
 ---
 
+
 ## 1. 🎯 S: Single Responsibility Principle (SRP)
 > A class (or function) should have only one reason to change.
 
 **In simple terms:** A single component should be responsible for only one task. If a class calculates salaries, saves them to the database, and sends emails, it becomes a "God Object" that is liable to break with any change.
+
 
 #### ❌ Bad:
 The `User` class is doing too much.
@@ -19,6 +21,7 @@ type User struct {
 func (u *User) SaveToDB() { /* ... */ }
 func (u *User) SendEmail() { /* ... */ } // A User should not know how to send emails!
 ```
+
 
 #### ✅ Good:
 Separate the logic.
@@ -36,10 +39,12 @@ func (s *EmailService) Send(u *User) {}
 
 ---
 
+
 ## 2. 🔓 O: Open/Closed Principle (OCP)
 > Software entities should be open for extension but closed for modification.
 
 **In simple terms:** You should be able to add new features without changing existing (and already tested) code.
+
 
 #### ❌ Bad:
 To add a new type of notification, you must modify `SendNotification`.
@@ -49,6 +54,7 @@ func SendNotification(msg string, tool string) {
     if tool == "sms" { /* ... */ } // You’ll have to add an 'if' here every time
 }
 ```
+
 
 #### ✅ Good:
 Use an interface.
@@ -64,20 +70,24 @@ func (t TelegramNotifier) Notify(msg string) { /* ... */ }
 
 ---
 
+
 ## 3. 🔄 L: Liskov Substitution Principle (LSP)
 > Objects in a program should be replaceable with instances of their subtypes without altering the correctness of that program.
 
 **In simple terms:** If you have a function that accepts a "Bird," it should also work with an "Ostrich," even if the ostrich doesn't fly. If the architecture breaks when you replace one subclass with another, the principle is violated.
+
 
 #### ❌ Typical Error:
 Rectangle and Square. A Square is mathematically a rectangle, but if a Square's `SetWidth` method also changes its height, it will break logic that expects the behavior of a standard Rectangle.
 
 ---
 
+
 ## 4. ✂️ I: Interface Segregation Principle (ISP)
 > Clients should not be forced to depend on methods they do not use.
 
 **In simple terms:** It is better to have many small, specialized interfaces than one huge "universal" interface.
+
 
 #### ❌ Bad:
 ```go
@@ -86,6 +96,7 @@ type Worker interface {
     Eat() // A robot doesn't need to eat! ❌
 }
 ```
+
 
 #### ✅ Good:
 ```go
@@ -97,6 +108,7 @@ type Robot struct {} // Implements only Workable
 
 ---
 
+
 ## 5. 💉 D: Dependency Inversion Principle (DIP)
 > High-level modules should not depend on low-level modules. Both should depend on abstractions.
 
@@ -104,5 +116,45 @@ type Robot struct {} // Implements only Workable
 
 ---
 
-> [!TIP]
-> **SOLID** is not a strict law but a guideline. Sometimes, for the sake of simplicity (KISS), it's okay to slightly deviate from SOLID in small projects.
+
+### 🎯 Summary
+
+**SOLID** is not a strict law but a guideline. Sometimes, for the sake of simplicity (KISS), it's okay to slightly deviate from SOLID in small projects.
+
+<!-- QUIZ_START 
+
+[
+    {
+        "question": "What is the main goal of the Single Responsibility Principle (SRP)?",
+        "options": [
+            "To make code run faster",
+            "A class should have only one reason to change",
+            "To keep all functions in one file",
+            "To use as many interfaces as possible"
+        ],
+        "correctIndex": 1
+    },
+    {
+        "question": "The Open/Closed Principle (OCP) states that software entities should be...",
+        "options": [
+            "Open for modification, closed for extension",
+            "Closed to all changes",
+            "Open for extension, but closed for modification",
+            "Open only for administrators"
+        ],
+        "correctIndex": 2
+    },
+    {
+        "question": "What does the Interface Segregation Principle (ISP) recommend?",
+        "options": [
+            "Creating one huge interface for all tasks",
+            "Dividing large interfaces into small, specialized ones",
+            "Avoiding interfaces altogether",
+            "Using only inheritance"
+        ],
+        "correctIndex": 1
+    }
+]
+
+QUIZ_END -->
+

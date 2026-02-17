@@ -4,6 +4,7 @@ If SOLID is the foundation, then these principles represent the common sense tha
 
 ---
 
+
 ## 💋 1. KISS (Keep It Simple, Stupid)
 
 This is the most important principle. Code should be as simple as possible. If a task can be solved without a complex hierarchy of classes and patterns—solve it simply.
@@ -15,6 +16,7 @@ This is the most important principle. Code should be as simple as possible. If a
 
 ---
 
+
 ## 🌵 2. DRY (Don't Repeat Yourself)
 
 Every piece of knowledge (logic) should have a single, unambiguous representation within the system. If you find yourself copy-pasting code in three different places, create a function or a method.
@@ -24,6 +26,7 @@ Sometimes "similar" code is not exactly the same. If you combine two different b
 > *Sometimes copying code once is better than creating the wrong abstraction.*
 
 ---
+
 
 ## 🚫 3. YAGNI (You Ain't Gonna Need It)
 
@@ -35,6 +38,7 @@ Don't write code for features that "might be needed in the future." Implement on
 
 ---
 
+
 ## 😲 4. POLA (Principle of Least Astonishment)
 
 Your code should behave predictably. If a method is named `GetUserDetails()`, it should not suddenly delete a user or change their password.
@@ -44,6 +48,7 @@ Your code should behave predictably. If a method is named `GetUserDetails()`, it
 - Avoid hidden side effects.
 
 ---
+
 
 ## 🛡️ 5. Composition Over Inheritance
 
@@ -55,6 +60,7 @@ Instead of building long inheritance chains (e.g., `Animal -> Mammal -> Dog -> B
 
 ---
 
+
 ## ⚖️ How to maintain balance?
 
 Sometimes these principles contradict each other. For example, **DRY** can make code more complex, potentially violating **KISS**. 
@@ -62,3 +68,41 @@ In such cases, prioritize as follows:
 1. **KISS** (Simplicity first).
 2. **YAGNI** (Don't do extra work).
 3. Everything else.
+
+<!-- QUIZ_START 
+
+[
+    {
+        "question": "What does the KISS principle stand for?",
+        "options": [
+            "Keep It Simple, Stupid",
+            "Knowledge Is Super Strength",
+            "Keep Its State Stable",
+            "Kindness Is So Sweet"
+        ],
+        "correctIndex": 0
+    },
+    {
+        "question": "What is the essence of the YAGNI principle?",
+        "options": [
+            "Always write code with future expansion in mind",
+            "Do not implement functionality that isn't needed right now",
+            "Use as many design patterns as possible",
+            "Keep code as long as possible"
+        ],
+        "correctIndex": 1
+    },
+    {
+        "question": "Which principle warns against duplicating logic in your code?",
+        "options": [
+            "KISS",
+            "YAGNI",
+            "DRY",
+            "POLA"
+        ],
+        "correctIndex": 2
+    }
+]
+
+QUIZ_END -->
+
